@@ -19,12 +19,6 @@ Version 0.1.0 is an early public build focused on safe scanning, protected-item 
 - Windows ACL-aware error handling and UAC elevation support.
 - Simulation previews before any future destructive operation.
 
-## Screenshots
-
-![Programs tab with controlled example data](docs/screenshots/programs.png)
-
-![Files tab with protected and selected controlled examples](docs/screenshots/files.png)
-
 ## Safety model
 
 Large files are never treated as automatically unnecessary. Windows, boot, driver, recovery, security, package, installed-program, reparse-point, and ACL-uncertain locations remain protected or inaccessible. The application does not take ownership, rewrite ACLs, disable security software, or bypass Windows protection mechanisms.
@@ -64,3 +58,4 @@ Use the issue templates for bugs, accessibility, performance, translations, prog
 ## License
 
 Deleter is released under the [MIT License](LICENSE).
+
