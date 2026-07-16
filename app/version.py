@@ -1,1 +1,5 @@
-__version__ = "0.1.0"
+Exit code: 0
+Wall time: 0.3 seconds
+Output:
+__version__ = "0.2.0"
+
