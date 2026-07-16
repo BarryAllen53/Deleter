@@ -3,6 +3,12 @@ Wall time: 0.4 seconds
 Output:
 # Changelog
 
+## [0.2.1] - 2026-07-16
+
+### Fixed
+
+- Added an explicit pytest configuration so the GitHub Windows runner does not mis-detect the TOML project configuration.
+
 ## [0.2.0] - 2026-07-16
 
 ### Added
