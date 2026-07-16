@@ -38,7 +38,7 @@ jobs:
           Compress-Archive -Path dist/Deleter -DestinationPath dist/Deleter-${{ github.ref_name }}-portable.zip
           $hash = (Get-FileHash dist/Deleter-${{ github.ref_name }}-portable.zip -Algorithm SHA256).Hash
           "$hash  Deleter-${{ github.ref_name }}-portable.zip" | Set-Content dist/SHA256SUMS.txt
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: |
