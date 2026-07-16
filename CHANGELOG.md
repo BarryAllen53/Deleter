@@ -1,6 +1,9 @@
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 # Changelog
 
-## [0.1.0] - 2026-07-16
+## [0.2.0] - 2026-07-16
 
 ### Added
 
@@ -8,13 +11,14 @@
 - Programs and Files navigation with multi-selection and protected-item states.
 - English, German, and Turkish user-facing text.
 - Accessible Output 2 announcements and keyboard-oriented Qt controls.
-- Safe cleanup previews and simulation mode.
+- Verified cleanup rules, final identity preflight, Recycle Bin execution, and simulation mode.
 - Windows-aware protected path and access-denied handling.
-- Verified cleanup-rule preflight, Recycle Bin execution, JSON export, and CSV export.
-- Controlled planning for registered Windows uninstall commands.
+- JSON and CSV export.
+- Controlled planning and isolated execution for registered Windows and Microsoft Store/AppX uninstall commands.
 
 ### Known limitations
 
-- Destructive deletion and program uninstall execution are intentionally not enabled in this first public build.
+- Permanent deletion is intentionally unavailable; cleanup always targets the Recycle Bin.
+- Authenticode signing requires the encrypted certificate secrets documented in the release workflow.
 - Windows ACL-denied, in-use, and security-managed paths remain visible as inaccessible or protected.
 
