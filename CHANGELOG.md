@@ -10,8 +10,11 @@
 - Accessible Output 2 announcements and keyboard-oriented Qt controls.
 - Safe cleanup previews and simulation mode.
 - Windows-aware protected path and access-denied handling.
+- Verified cleanup-rule preflight, Recycle Bin execution, JSON export, and CSV export.
+- Controlled planning for registered Windows uninstall commands.
 
 ### Known limitations
 
 - Destructive deletion and program uninstall execution are intentionally not enabled in this first public build.
 - Windows ACL-denied, in-use, and security-managed paths remain visible as inaccessible or protected.
+
