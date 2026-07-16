@@ -2,256 +2,57 @@
 
 ## Supported versions
 
-Only the latest published release receives security fixes.
+| Version | Security fixes |
+| --- | --- |
+| `0.2.x` | Supported |
+| Older releases | Not supported; update to the latest release before reporting a previously fixed issue |
 
-## Reporting
+The current release is listed on the [GitHub Releases page](https://github.com/BarryAllen53/Deleter/releases).
 
-Do not report security vulnerabilities in public issues. Use GitHub Security Advisories for this repository. Include the affected version, Windows version, reproduction steps, impact, and …6835 tokens truncated…  self.preview_button.clicked.connect(self.preview_cleanup)
-        self.select_all_button = QPushButton()
-        self.select_all_button.clicked.connect(self.select_all_visible)
-        self.clear_button = QPushButton()
-        self.clear_button.clicked.connect(self.clear_selection)
-        self.review_button = QPushButton()
-        self.review_button.clicked.connect(self.review_selection)
-        self.program_action = QPushButton()
-        self.program_action.clicked.connect(self.review_program_uninstall)
-        self.details_button = QPushButton()
-        self.details_button.clicked.connect(self.show_details)
-        self.selection_status = QLabel()
-        self.selection_status.setAccessibleName("Selection status")
-        self.log_list = QListWidget()
-        self.log_list.setAccessibleName("Operation log")
-        controls = QGridLayout()
-        controls.addWidget(QLabel(""), 0, 0)
-        controls.addWidget(self.threshold, 0, 1)
-        controls.addWidget(self.scan_button, 0, 2)
-        controls.addWidget(self.pause_button, 0, 3)
-        controls.addWidget(self.stop_button, 0, 4)
-        controls.addWidget(self.simulation, 1, 0, 1, 2)
-        controls.addWidget(self.progress, 1, 2, 1, 3)
-        actions = QHBoxLayout()
-        actions.addWidget(self.select_all_button)
-        actions.addWidget(self.clear_button)
-        actions.addWidget(self.review_button)
-        actions.addWidget(self.preview_button)
-        actions.addWidget(self.program_action)
-        actions.addWidget(self.details_button)
-        actions.addStretch()
-        body = QVBoxLayout()
-        body.addLayout(controls)
-        body.addWidget(self.tabs, 1)
-        body.addLayout(actions)
-        body.addWidget(self.selection_status)
-        body.addWidget(self.status)
-        body.addWidget(self.log_list, 0)
-        container = QWidget()
-        container.setLayout(body)
-        self.setCentralWidget(container)
-        settings_action = QAction("Settings", self)
-        settings_action.triggered.connect(self.choose_language)
-        self.menuBar().addAction(settings_action)
+## Reporting a vulnerability
 
-    def _retranslate(self) -> None:
-        self.setWindowTitle(self.t.text("title"))
-        self.scan_button.setText(self.t.text("scan"))
-        self.pause_button.setText(self.t.text("pause"))
-        self.stop_button.setText(self.t.text("stop"))
-        self.simulation.setText(self.t.text("simulate"))
-        self.preview_button.setText(self.t.text("delete"))
-        self.tabs.setTabText(0, self.t.text("programs"))
-        self.tabs.setTabText(1, self.t.text("files"))
-        self.select_all_button.setText(self.t.text("select_all"))
-        self.clear_button.setText(self.t.text("clear"))
-        self.review_button.setText(self.t.text("review_selection"))
-        self.program_action.setText(self.t.text("deinstall"))
-        self.details_button.setText(self.t.text("details"))
-        self.files_table.setHorizontalHeaderLabels([self.t.text("name"), self.t.text("path"), "Type", self.t.text("size"), self.t.text("used_space"), self.t.text("modified"), self.t.text("source"), self.t.text("risk"), self.t.text("access"), self.t.text("protection"), self.t.text("reason"), "Selected"])
-        self.programs_table.setHorizontalHeaderLabels([self.t.text("name"), self.t.text("publisher"), self.t.text("version"), self.t.text("source"), self.t.text("install_date"), self.t.text("used_space"), self.t.text("install_location"), self.t.text("uninstall_method"), self.t.text("protection")])
-        self.status.setText(self.t.text("status_ready"))
+Do not report security vulnerabilities in public issues, pull requests, discussions, or comments. Use the repository's private [GitHub Security Advisory form](https://github.com/BarryAllen53/Deleter/security/advisories/new).
 
-    def start_scan(self) -> None:
-        if self.task:
-            return
-        self.entries.clear()
-        self.errors.clear()
-        self.files_table.setRowCount(0)
-        self.programs_table.setRowCount(0)
-        self.add_programs(installed_programs())
-        self.task = ScanTask(system_scan_roots(), int(self.threshold.currentData()))
-        self.task.signals.batch.connect(self.add_batch)
-        self.task.signals.progress.connect(self.update_progress)
-        self.task.signals.error.connect(self.record_error)
-        self.task.signals.finished.connect(self.scan_finished)
-        self.scan_button.setEnabled(False)
-        self.pause_button.setEnabled(True)
-        self.stop_button.setEnabled(True)
-        self.progress.setVisible(True)
-        self.status.setText(self.t.text("status_scanning"))
-        self.announcer.say(self.t.text("status_scanning"))
-        self.pool.start(self.task)
+If the advisory form is unavailable, do not publish the vulnerability. Contact the repository maintainers through an authenticated GitHub channel and request a private reporting route.
 
-    def add_programs(self, programs: list[ProgramEntry]) -> None:
-        self.programs_table.setSortingEnabled(False)
-        for program in programs:
-            row = self.programs_table.rowCount()
-            self.programs_table.insertRow(row)
-            values = [program.name, program.publisher, program.version, program.source, program.install_date, self.format_size(program.used_space_bytes) if program.used_space_bytes else "", program.install_location, program.uninstall_command, self.t.text("protected") if program.protected else self.t.text("review")]
-            for column, value in enumerate(values):
-                self.programs_table.setItem(row, column, QTableWidgetItem(value))
-            item = self.programs_table.item(row, 0)
-            if item is None:
-                continue
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Unchecked)
-            if program.protected:
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-                item.setToolTip(program.protection_reason)
-        self.programs_table.setSortingEnabled(True)
+Please include:
 
-    def add_batch(self, batch: list[FileEntry]) -> None:
-        self.entries.extend(batch)
-        self.files_table.setSortingEnabled(False)
-        for entry in batch:
-            row = self.files_table.rowCount()
-            self.files_table.insertRow(row)
-            decision = self.policy.assess(entry.path)
-            protection = self.t.text("protected") if decision.protected else self.t.text("review")
-            values = [entry.name, str(entry.path), entry.entry_type.value, self.format_size(entry.size_bytes), self.format_size(entry.used_space_bytes or entry.size_bytes), entry.modified_at.strftime("%Y-%m-%d %H:%M"), entry.source, entry.risk, entry.access_status, protection + " — " + decision.reason if decision.protected else protection, entry.cleanup_reason, ""]
-            for column, value in enumerate(values):
-                self.files_table.setItem(row, column, QTableWidgetItem(value))
-            item = self.files_table.item(row, 0)
-            if item is None:
-                continue
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Unchecked)
-            if decision.protected:
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-                item.setToolTip(decision.reason)
-        self.files_table.setSortingEnabled(True)
+- Affected Deleter version and whether it was installed from source or a portable release
+- Windows edition, version, and architecture
+- Whether the process was elevated and which user context was active
+- Clear reproduction steps or a minimal proof of concept
+- Expected and observed behavior
+- Security impact, affected boundaries, and any required privileges
+- Relevant sanitized logs, stack traces, or screenshots
+- Whether the issue is reproducible on the latest release
 
-    def update_progress(self, progress: ScanProgress) -> None:
-        self.status.setText(self.t.text("live_status", scanned=progress.scanned_items, matched=progress.matched_items, skipped=progress.skipped_items, protected=progress.protected_items, errors=progress.errors, path=progress.current_path))
+Remove usernames, private paths, personal files, access tokens, passwords, certificate material, registry exports, and other sensitive data before submitting evidence. Do not attach a malicious payload unless the maintainers specifically request it through the private advisory.
 
-    def record_error(self, error: ScanError) -> None:
-        self.errors.append(error)
-        if error.error_code == 5:
-            self.log_list.addItem(self.t.text("access_denied", path=error.path))
-        else:
-            self.log_list.addItem(f"{error.path}: {error.message}")
+## Response and disclosure
 
-    def scan_finished(self) -> None:
-        stopped = bool(self.task and self.task.stop_requested)
-        self.task = None
-        self.scan_button.setEnabled(True)
-        self.pause_button.setEnabled(False)
-        self.stop_button.setEnabled(False)
-        self.progress.setVisible(False)
-        message = self.t.text("status_stopped") if stopped else self.t.text("status_done", count=len(self.entries))
-        if self.errors:
-            message += " " + self.t.text("errors", count=len(self.errors))
-        self.status.setText(message)
-        self.announcer.say(message)
-        self.update_selection_status()
+The maintainers aim to acknowledge a report within seven calendar days. They will validate the report, keep the reporter informed when practical, coordinate a fix and disclosure date, and credit the reporter according to their preference.
 
-    def toggle_pause(self) -> None:
-        if not self.task:
-            return
-        if self.task.pause_requested:
-            self.task.resume()
-            self.pause_button.setText(self.t.text("pause"))
-            self.announcer.say(self.t.text("resume"))
-        else:
-            self.task.pause()
-            self.pause_button.setText(self.t.text("resume"))
-            self.announcer.say(self.t.text("pause"))
+Do not publicly disclose the vulnerability, exploit details, or identifying proof before coordinated disclosure. A report may be closed when it is not reproducible, is already fixed, is outside the application's security boundary, or does not create a security impact.
 
-    def stop_scan(self) -> None:
-        if self.task:
-            self.task.stop()
+## Security boundaries
 
-    def preview_cleanup(self) -> None:
-        selected = self.selected_file_entries()
-        locked = [entry for entry in selected if self.policy.is_protected(entry.path)]
-        size = self.format_size(sum(entry.size_bytes for entry in selected))
-        message = f"{self.t.text('selected', count=len(selected), size=size)}\n{self.t.text('locked_count', count=len(locked))}\n{self.t.text('preview')}"
-        QMessageBox.information(self, self.t.text("delete"), message)
-        self.announcer.say(message.replace("\n", ". "))
+Deleter is a Windows desktop application. It does not upload file lists, paths, program lists, telemetry, or usage data. Administrator elevation does not bypass explicit ACL denies, in-use files, Windows security boundaries, or the application's protected-path policy.
 
-    def selected_file_entries(self) -> list[FileEntry]:
-        selected_paths: set[str] = set()
-        for row in range(self.files_table.rowCount()):
-            check_item = self.files_table.item(row, 0)
-            path_item = self.files_table.item(row, 1)
-            if check_item is not None and path_item is not None and check_item.checkState() == Qt.CheckState.Checked:
-                selected_paths.add(path_item.text())
-        return [entry for entry in self.entries if str(entry.path) in selected_paths]
+The application must never permanently delete protected Windows-critical elements. Cleanup is restricted to verified, confirmed moves to the Windows Recycle Bin, and uninstall commands are validated before isolated execution.
 
-    def select_all_visible(self) -> None:
-        table = self.programs_table if self.tabs.currentIndex() == 0 else self.files_table
-        for row in range(table.rowCount()):
-            item = table.item(row, 0)
-            if item is not None and item.flags() & Qt.ItemFlag.ItemIsEnabled:
-                item.setCheckState(Qt.CheckState.Checked)
-        self.update_selection_status()
+## Out of scope
 
-    def clear_selection(self) -> None:
-        for table in (self.programs_table, self.files_table):
-            for row in range(table.rowCount()):
-                item = table.item(row, 0)
-                if item:
-                    item.setCheckState(Qt.CheckState.Unchecked)
-        self.update_selection_status()
+The following are not security vulnerabilities in Deleter unless they demonstrate an additional security impact:
 
-    def review_selection(self) -> None:
-        selected = self.selected_file_entries()
-        locked = sum(self.policy.is_protected(entry.path) for entry in selected)
-        QMessageBox.information(self, self.t.text("review_selection"), self.t.text("selected", count=len(selected), size=self.format_size(sum(entry.size_bytes for entry in selected))) + "\n" + self.t.text("locked_count", count=locked))
+- Access denied on files protected by Windows, ACLs, security software, or another process
+- Unsupported uninstallers or missing optional Windows providers
+- Findings that require an already-compromised administrator or SYSTEM account
+- Vulnerabilities in Windows, Python, Qt, PySide6, Accessible Output 2, or other third-party components without a Deleter-specific impact
+- Denial of service caused only by scanning a deliberately hostile or unbounded filesystem
 
-    def review_program_uninstall(self) -> None:
-        selected: list[str] = []
-        for row in range(self.programs_table.rowCount()):
-            item = self.programs_table.item(row, 0)
-            if item is not None and item.checkState() == Qt.CheckState.Checked:
-                selected.append(item.text())
-        QMessageBox.information(self, self.t.text("deinstall"), f"{len(selected)} programs selected.\n{self.t.text('preview')}")
+Third-party vulnerabilities should be reported to their respective maintainers as well as privately to Deleter when the application meaningfully amplifies the impact.
 
-    def show_details(self) -> None:
-        selected = self.selected_file_entries()
-        if selected:
-            entry = selected[0]
-            QMessageBox.information(self, self.t.text("details"), f"{entry.name}\n{entry.path}\n{entry.cleanup_reason}\n{entry.protection_reason}")
+## Safe-harbor request
 
-    def update_selection_status(self) -> None:
-        selected = self.selected_file_entries()
-        locked = sum(self.policy.is_protected(entry.path) for entry in selected)
-        inaccessible = sum(entry.access_status != "accessible" for entry in selected)
-        risk = sum(entry.risk.casefold() in {"high", "critical"} for entry in selected)
-        self.selection_status.setText(self.t.text("selection_status", count=len(selected), size=self.format_size(sum(entry.size_bytes for entry in selected)), locked=locked, inaccessible=inaccessible, risk=risk))
+Good-faith security research that follows this policy, avoids privacy violations and service disruption, and stops testing after confirming the issue is authorized. The maintainers will not pursue legal action for such research based solely on conduct within this policy's scope.
 
-    def choose_language(self) -> None:
-        labels = ["English", "Deutsch", "Türkçe"]
-        language, ok = QInputDialog.getItem(self, "Settings", "Language", labels, ["en", "de", "tr"].index(self.t.language), False)
-        if ok:
-            self.settings.language = dict(zip(labels, ("en", "de", "tr")))[language]
-            self.settings.save()
-            self._retranslate()
-
-    def choose_custom_size(self, index: int) -> None:
-        if self.threshold.itemData(index) is not None:
-            return
-        value, ok = QInputDialog.getDouble(self, self.t.text("threshold"), "MB", 500, 500, 1024000, 0)
-        if ok:
-            self.threshold.setItemText(index, f"{value:g} MB")
-            self.threshold.setItemData(index, int(value * 1024 * 1024))
-        else:
-            self.threshold.setCurrentIndex(0)
-
-    @staticmethod
-    def format_size(size: int) -> str:
-        units = ("B", "KB", "MB", "GB", "TB")
-        value = float(size)
-        for unit in units:
-            if value < 1024 or unit == units[-1]:
-                return f"{value:.1f} {unit}"
-            value /= 1024
-        return "0.0 B"
