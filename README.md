@@ -33,7 +33,7 @@ The supported UI languages are English, Deutsch, and Türkçe. Windows 10 or Win
 
 ## Installation and start
 
-For normal users, download a release asset when one is available. From source, run `run.bat`; it creates `.venv`, installs controlled dependencies, and starts `python -m app`. Developers can install `requirements-dev.txt` and run the same module directly.
+For normal users, download a release asset when one is available. From source, run `run.bat`; it creates `.venv`, installs controlled dependencies, and starts `python -m app`. Developers can install `requirements-dev.txt` and run the same module directly. Release builds are portable; they are Authenticode-signed only when the maintainer configures the encrypted `WINDOWS_PFX_BASE64` and `WINDOWS_PFX_PASSWORD` GitHub Secrets.
 
 ## Usage
 
