@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.6 seconds
+Output:
 # Deleter
 
 [English documentation](README.md) · [Türkçe Dokumentation](README.tr.md)
@@ -6,7 +9,7 @@ Deleter ist eine barrierearme Windows-Desktopanwendung zur Analyse von Speicherp
 
 ## Status
 
-Version 0.1.0 ist eine frühe öffentliche Version mit Schwerpunkt auf sicherem Scannen, Schutzstatus, Barrierefreiheit und Simulation. Löschen und Deinstallieren sind noch nicht als destruktive Aktionen aktiviert.
+Version 0.2.0 ist die erste funktionale öffentliche Version. Sie umfasst geschütztes systemweites Scannen, geprüfte Bereinigung über den Windows-Papierkorb, unterstützte Deinstallation, Exporte, Barrierefreiheit und Simulation.
 
 ## Funktionen
 
@@ -17,7 +20,9 @@ Version 0.1.0 ist eine frühe öffentliche Version mit Schwerpunkt auf sicherem 
 - Englisch, Deutsch und Türkisch.
 - Native Qt-Tastaturbedienung und Accessible-Output-2-Ankündigungen.
 - ACL-bewusste Windows-Fehlerbehandlung und UAC-Unterstützung.
-- Simulationsvorschau vor zukünftigen destruktiven Vorgängen.
+- Geprüfte Bereinigung verschiebt berechtigte Dateien nach Bestätigung in den Windows-Papierkorb; der Simulationsmodus bleibt verfügbar.
+- Deinstallationsanbieter für Registrierung und Microsoft Store/AppX mit validierter Befehlsplanung und isolierter Ausführung.
+- JSON- und CSV-Exporte der Scanergebnisse.
 
 ## Sicherheit
 
@@ -29,7 +34,7 @@ Native Qt-Rollen, Namen, Fokusreihenfolge und Kontrollzustände werden verwendet
 
 ## Anforderungen und Start
 
-Windows 10 oder Windows 11 und Python 3.14.5 werden für den Quellcode benötigt. Für normale Nutzer ist ein fertiges Release vorgesehen. Aus dem Quellcode startet `run.bat` die virtuelle Umgebung, installiert Abhängigkeiten und führt `python -m app` aus. Entwickler können `requirements-dev.txt` installieren.
+Windows 10 oder Windows 11 und Python 3.14.5 werden für den Quellcode benötigt. Für normale Nutzer steht ein portables ZIP im Release-Bereich bereit. Aus dem Quellcode startet `run.bat` die virtuelle Umgebung, installiert Abhängigkeiten und führt `python -m app` aus. Entwickler können `requirements-dev.txt` installieren.
 
 ## Verwendung
 
@@ -37,8 +42,9 @@ Beim Start beginnt automatisch eine Systemanalyse. Dateien werden nach Mindestgr
 
 ## Datenschutz, Einschränkungen und Beiträge
 
-Dateilisten, Pfade, Programminformationen und Nutzungsdaten verlassen das Gerät nicht. Destruktive Bereinigung, vollständige Deinstallationsanbieter, Exporte und ein signiertes portables Release sind in 0.1.0 noch nicht aktiviert. Siehe [ROADMAP.md](ROADMAP.md). Fehler und Beiträge sind in [CONTRIBUTING.md](CONTRIBUTING.md) beschrieben; Sicherheitsprobleme gehören in GitHub Security Advisories gemäß [SECURITY.md](SECURITY.md).
+Dateilisten, Pfade, Programminformationen und Nutzungsdaten verlassen das Gerät nicht. Permanente Löschung ist absichtlich nicht verfügbar; Bereinigung ist auf geprüfte, bestätigte Verschiebungen in den Papierkorb beschränkt. Die Signatur wird vom Release-Workflow aktiviert, sobald die Zertifikats-Secrets hinterlegt sind. Siehe [ROADMAP.md](ROADMAP.md). Fehler und Beiträge sind in [CONTRIBUTING.md](CONTRIBUTING.md) beschrieben; Sicherheitsprobleme gehören in GitHub Security Advisories gemäß [SECURITY.md](SECURITY.md).
 
 ## Lizenz
 
 Deleter steht unter der [MIT-Lizenz](LICENSE).
+
