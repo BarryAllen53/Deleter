@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 # Deleter
 
 [Deutsche Dokumentation](README.de.md) · [Türkçe documentation](README.tr.md)
@@ -6,7 +9,7 @@ Deleter is a Windows desktop application for accessible storage analysis and saf
 
 ## Status
 
-Version 0.1.0 is an early public build focused on safe scanning, protected-item handling, accessibility, and simulation. It is not a destructive cleaner: deletion and uninstall execution remain disabled until their provider and preflight safeguards are complete.
+Version 0.2.0 is the first functional public release. It includes protected system-wide scanning, verified Recycle Bin cleanup, supported uninstall execution, exports, accessibility, and simulation mode.
 
 ## Features
 
@@ -17,7 +20,9 @@ Version 0.1.0 is an early public build focused on safe scanning, protected-item 
 - English, German, and Turkish UI text.
 - Qt keyboard accessibility and Accessible Output 2 announcements.
 - Windows ACL-aware error handling and UAC elevation support.
-- Simulation previews before any future destructive operation.
+- Verified cleanup moves eligible files to the Windows Recycle Bin after confirmation; simulation mode remains available for review.
+- Registry and Microsoft Store/AppX uninstall providers, with validated command planning and isolated execution.
+- JSON and CSV exports for scan results.
 
 ## Safety model
 
@@ -29,11 +34,11 @@ Controls use native Qt roles, names, keyboard focus, check states, and status la
 
 ## Languages and requirements
 
-The supported UI languages are English, Deutsch, and Türkçe. Windows 10 or Windows 11 and Python 3.14.5 are required for source execution. A future portable release will not require Python.
+The supported UI languages are English, Deutsch, and Türkçe. Windows 10 or Windows 11 and Python 3.14.5 are required for source execution. Portable release artifacts do not require Python.
 
 ## Installation and start
 
-For normal users, download a release asset when one is available. From source, run `run.bat`; it creates `.venv`, installs controlled dependencies, and starts `python -m app`. Developers can install `requirements-dev.txt` and run the same module directly. Release builds are portable; they are Authenticode-signed only when the maintainer configures the encrypted `WINDOWS_PFX_BASE64` and `WINDOWS_PFX_PASSWORD` GitHub Secrets.
+For normal users, download the portable ZIP from the Releases page. From source, run `run.bat`; it creates `.venv`, installs controlled dependencies, and starts `python -m app`. Developers can install `requirements-dev.txt` and run the same module directly. Authenticode signing is enabled by the release workflow when the maintainer configures the encrypted `WINDOWS_PFX_BASE64` and `WINDOWS_PFX_PASSWORD` GitHub Secrets.
 
 ## Usage
 
@@ -49,7 +54,7 @@ The application is organized under `app/accessibility`, `app/cleanup`, `app/conf
 
 ## Known limitations and roadmap
 
-Destructive cleanup, verified cleanup rules, full uninstall providers, exports, and a portable signed build are not enabled in 0.1.0. See [ROADMAP.md](ROADMAP.md) and [CHANGELOG.md](CHANGELOG.md).
+Permanent deletion is intentionally unavailable: cleanup is restricted to verified, confirmed moves to the Recycle Bin. Provider availability depends on Windows registration and installed Store packages. See [ROADMAP.md](ROADMAP.md) and [CHANGELOG.md](CHANGELOG.md).
 
 ## Reporting, contributions, and releases
 
