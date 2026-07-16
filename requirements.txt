@@ -1,2 +1,2 @@
 PySide6>=6.8,<7
-accessible-output2>=0.1,<1
+accessible-output2>=0.17,<1
