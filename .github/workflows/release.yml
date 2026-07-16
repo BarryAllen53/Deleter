@@ -10,6 +10,9 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_PFX_BASE64 }}
+      WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,6 +23,15 @@ jobs:
       - run: python -m pytest -q
       - run: ruff check .
       - run: python -m PyInstaller --noconfirm --clean --name Deleter --windowed app/__main__.py
+      - name: Sign portable executable when a certificate is configured
+        if: ${{ env.WINDOWS_PFX_BASE64 != '' && env.WINDOWS_PFX_PASSWORD != '' }}
+        shell: pwsh
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP 'deleter-signing.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_PFX_BASE64))
+          & signtool sign /fd SHA256 /f $pfx /p $env:WINDOWS_PFX_PASSWORD /tr http://timestamp.digicert.com /td SHA256 dist/Deleter/Deleter.exe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Remove-Item -LiteralPath $pfx -Force
       - shell: pwsh
         run: |
           Copy-Item LICENSE, README.md, README.de.md, README.tr.md, CHANGELOG.md -Destination dist/Deleter
@@ -32,3 +44,4 @@ jobs:
           files: |
             dist/Deleter-${{ github.ref_name }}-portable.zip
             dist/SHA256SUMS.txt
+
