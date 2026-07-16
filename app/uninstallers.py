@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.3 seconds
+Output:
 from __future__ import annotations
 
 import os
@@ -27,6 +30,10 @@ class UninstallService:
             if not re.fullmatch(r"[A-Za-z0-9._-]+", program.package_id):
                 return UninstallPlan(program, (), False, "The Microsoft Store package identity is invalid")
             return UninstallPlan(program, ("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", f"Remove-AppxPackage -Package '{program.package_id}'"), True, "Microsoft Store package removal")
+        if program.provider_id == "winget":
+            if not re.fullmatch(r"[A-Za-z0-9._-]+", program.package_id):
+                return UninstallPlan(program, (), False, "The WinGet package identity is invalid")
+            return UninstallPlan(program, ("winget.exe", "uninstall", "--id", program.package_id, "--exact", "--silent", "--accept-source-agreements", "--disable-interactivity"), True, "WinGet package removal")
         if not program.uninstall_command.strip():
             return UninstallPlan(program, (), False, "No registered uninstall method")
         try:
