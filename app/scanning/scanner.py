@@ -84,7 +84,8 @@ class ScanTask(QRunnable):
                                     size = item.stat(follow_symlinks=False).st_size
                                     if size >= self.minimum_size_bytes:
                                         matched += 1
-                                        batch.append(FileEntry(item.name, path, size, datetime.fromtimestamp(item.stat(follow_symlinks=False).st_mtime), EntryType.FILE, protected=decision.protected, protection_reason=decision.reason))
+                                        item_stat = item.stat(follow_symlinks=False)
+                                        batch.append(FileEntry(item.name, path, size, datetime.fromtimestamp(item_stat.st_mtime), EntryType.FILE, protected=decision.protected, protection_reason=decision.reason, modified_ns=item_stat.st_mtime_ns))
                                         if len(batch) >= 100:
                                             self.signals.batch.emit(batch)
                                             batch = []
