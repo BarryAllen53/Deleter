@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.3 seconds
-Output:
 # Deleter
 
 [English documentation](README.md) · [Deutsche Dokumentation](README.de.md)
