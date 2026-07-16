@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.spec
+*.log
+.deleter/
+smoke-settings.json
+.env
+.env.*
+!.env.example

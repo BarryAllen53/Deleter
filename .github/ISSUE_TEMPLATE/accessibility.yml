@@ -1,0 +1,16 @@
+name: Accessibility issue
+description: Report a keyboard, screen-reader, contrast, scaling, or focus problem.
+title: "[Accessibility]: "
+labels: [accessibility]
+body:
+  - type: input
+    id: assistive_technology
+    attributes: {label: Screen reader or accessibility technology}
+  - type: textarea
+    id: steps
+    attributes: {label: Steps to reproduce}
+    validations: {required: true}
+  - type: textarea
+    id: observed
+    attributes: {label: Observed and expected behavior}
+    validations: {required: true}

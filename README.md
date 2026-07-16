@@ -64,4 +64,3 @@ Use the issue templates for bugs, accessibility, performance, translations, prog
 ## License
 
 Deleter is released under the [MIT License](LICENSE).
-

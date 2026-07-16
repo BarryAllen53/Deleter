@@ -1,0 +1,34 @@
+name: Windows release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+      - run: ruff check .
+      - run: python -m PyInstaller --noconfirm --clean --name Deleter --windowed app/__main__.py
+      - shell: pwsh
+        run: |
+          Copy-Item LICENSE, README.md, README.de.md, README.tr.md, CHANGELOG.md -Destination dist/Deleter
+          Compress-Archive -Path dist/Deleter -DestinationPath dist/Deleter-${{ github.ref_name }}-portable.zip
+          $hash = (Get-FileHash dist/Deleter-${{ github.ref_name }}-portable.zip -Algorithm SHA256).Hash
+          "$hash  Deleter-${{ github.ref_name }}-portable.zip" | Set-Content dist/SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/Deleter-${{ github.ref_name }}-portable.zip
+            dist/SHA256SUMS.txt
