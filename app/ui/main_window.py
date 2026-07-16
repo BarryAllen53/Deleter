@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QThreadPool
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QFileDialog,
     QGridLayout,
     QHBoxLayout,
     QInputDialog,
@@ -24,13 +26,16 @@ from PySide6.QtWidgets import (
 )
 
 from app.accessibility.announcer import Announcer
+from app.cleanup.operations import CleanupService
 from app.cleanup.safety import ProtectedPathPolicy
 from app.config.settings import AppSettings
+from app.exports import ExportService
 from app.localization.translator import Translator
 from app.models.domain import FileEntry, ProgramEntry, ScanError, ScanProgress
-from app.providers.programs import installed_programs
+from app.providers.programs import ProgramDiscoveryTask
 from app.scanning.paths import system_scan_roots
 from app.scanning.scanner import ScanTask
+from app.uninstallers import UninstallPlan, UninstallService, UninstallTask
 
 
 class MainWindow(QMainWindow):
@@ -41,9 +46,13 @@ class MainWindow(QMainWindow):
         self.announcer = Announcer()
         self.pool = QThreadPool.globalInstance()
         self.task: ScanTask | None = None
+        self.uninstall_task: UninstallTask | None = None
+        self.program_task: ProgramDiscoveryTask | None = None
         self.entries: list[FileEntry] = []
+        self.program_catalog: list[ProgramEntry] = []
         self.errors: list[ScanError] = []
         self.policy = ProtectedPathPolicy()
+        self.cleanup = CleanupService(self.policy)
         self.log = logging.getLogger("deleter")
         self._build_ui()
         self._retranslate()
@@ -84,7 +93,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.programs_table, "Programs")
         self.tabs.addTab(self.files_table, "Files")
         self.preview_button = QPushButton()
-        self.preview_button.clicked.connect(self.preview_cleanup)
+        self.preview_button.clicked.connect(self.cleanup_selected)
         self.select_all_button = QPushButton()
         self.select_all_button.clicked.connect(self.select_all_visible)
         self.clear_button = QPushButton()
@@ -128,6 +137,12 @@ class MainWindow(QMainWindow):
         settings_action = QAction("Settings", self)
         settings_action.triggered.connect(self.choose_language)
         self.menuBar().addAction(settings_action)
+        export_menu = self.menuBar().addMenu("Export")
+        export_json = QAction(self.t.text("export_json"), self)
+        export_json.triggered.connect(self.export_json)
+        export_csv = QAction(self.t.text("export_csv"), self)
+        export_csv.triggered.connect(self.export_csv)
+        export_menu.addActions((export_json, export_csv))
 
     def _retranslate(self) -> None:
         self.setWindowTitle(self.t.text("title"))
@@ -135,7 +150,7 @@ class MainWindow(QMainWindow):
         self.pause_button.setText(self.t.text("pause"))
         self.stop_button.setText(self.t.text("stop"))
         self.simulation.setText(self.t.text("simulate"))
-        self.preview_button.setText(self.t.text("delete"))
+        self.preview_button.setText(self.t.text("cleanup"))
         self.tabs.setTabText(0, self.t.text("programs"))
         self.tabs.setTabText(1, self.t.text("files"))
         self.select_all_button.setText(self.t.text("select_all"))
@@ -151,10 +166,13 @@ class MainWindow(QMainWindow):
         if self.task:
             return
         self.entries.clear()
+        self.program_catalog.clear()
         self.errors.clear()
         self.files_table.setRowCount(0)
         self.programs_table.setRowCount(0)
-        self.add_programs(installed_programs())
+        self.program_task = ProgramDiscoveryTask()
+        self.program_task.signals.finished.connect(self.programs_found)
+        self.pool.start(self.program_task)
         self.task = ScanTask(system_scan_roots(), int(self.threshold.currentData()))
         self.task.signals.batch.connect(self.add_batch)
         self.task.signals.progress.connect(self.update_progress)
@@ -168,7 +186,14 @@ class MainWindow(QMainWindow):
         self.announcer.say(self.t.text("status_scanning"))
         self.pool.start(self.task)
 
+    def programs_found(self, programs: list[ProgramEntry]) -> None:
+        self.programs_table.setRowCount(0)
+        self.program_catalog.clear()
+        self.add_programs(programs)
+        self.program_task = None
+
     def add_programs(self, programs: list[ProgramEntry]) -> None:
+        self.program_catalog.extend(programs)
         self.programs_table.setSortingEnabled(False)
         for program in programs:
             row = self.programs_table.rowCount()
@@ -255,6 +280,36 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, self.t.text("delete"), message)
         self.announcer.say(message.replace("\n", ". "))
 
+    def cleanup_selected(self) -> None:
+        selected = self.selected_file_entries()
+        if not selected:
+            QMessageBox.information(self, self.t.text("cleanup"), self.t.text("no_selection"))
+            return
+        if self.simulation.isChecked():
+            self.preview_cleanup()
+            return
+        answer = QMessageBox.question(self, self.t.text("cleanup"), self.t.text("confirm_cleanup"), QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        results = [self.cleanup.move_to_recycle_bin(entry) for entry in selected]
+        success = sum(result.success for result in results)
+        skipped = sum(result.skipped or not result.success for result in results)
+        for result in results:
+            self.log_list.addItem(f"{result.path}: {result.message}")
+        message = self.t.text("cleanup_done", success=success, skipped=skipped)
+        self.status.setText(message)
+        self.announcer.say(message)
+
+    def export_json(self) -> None:
+        target, ok = QFileDialog.getSaveFileName(self, self.t.text("export_json"), "scan-results.json", "JSON (*.json)")
+        if target and ok:
+            ExportService.write_json(Path(target), self.entries)
+
+    def export_csv(self) -> None:
+        target, ok = QFileDialog.getSaveFileName(self, self.t.text("export_csv"), "scan-results.csv", "CSV (*.csv)")
+        if target and ok:
+            ExportService.write_csv(Path(target), self.entries)
+
     def selected_file_entries(self) -> list[FileEntry]:
         selected_paths: set[str] = set()
         for row in range(self.files_table.rowCount()):
@@ -286,12 +341,39 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, self.t.text("review_selection"), self.t.text("selected", count=len(selected), size=self.format_size(sum(entry.size_bytes for entry in selected))) + "\n" + self.t.text("locked_count", count=locked))
 
     def review_program_uninstall(self) -> None:
-        selected: list[str] = []
+        selected: list[ProgramEntry] = []
         for row in range(self.programs_table.rowCount()):
             item = self.programs_table.item(row, 0)
             if item is not None and item.checkState() == Qt.CheckState.Checked:
-                selected.append(item.text())
-        QMessageBox.information(self, self.t.text("deinstall"), f"{len(selected)} programs selected.\n{self.t.text('preview')}")
+                program = next((candidate for candidate in self.program_catalog if candidate.name == item.text()), None)
+                if program is not None:
+                    selected.append(program)
+        if not selected:
+            QMessageBox.information(self, self.t.text("deinstall"), self.t.text("no_selection"))
+            return
+        plans = [UninstallService().plan(program) for program in selected]
+        summary = "\n".join(f"{plan.program.name}: {plan.reason}" for plan in plans)
+        if self.simulation.isChecked():
+            QMessageBox.information(self, self.t.text("deinstall"), summary + "\n" + self.t.text("preview"))
+            return
+        answer = QMessageBox.question(self, self.t.text("deinstall"), summary + "\n\nProceed?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        self.program_action.setEnabled(False)
+        self.uninstall_task = UninstallTask(plans)
+        self.uninstall_task.signals.finished.connect(self.uninstall_finished)
+        self.pool.start(self.uninstall_task)
+
+    def uninstall_finished(self, results: list[tuple[UninstallPlan, int | str]]) -> None:
+        success = sum(isinstance(code, int) and code == 0 for _, code in results)
+        failed = len(results) - success
+        for plan, code in results:
+            self.log_list.addItem(f"{plan.program.name}: {code}")
+        self.program_action.setEnabled(True)
+        self.uninstall_task = None
+        message = self.t.text("uninstall_done", success=success, failed=failed)
+        self.status.setText(message)
+        self.announcer.say(message)
 
     def show_details(self) -> None:
         selected = self.selected_file_entries()
