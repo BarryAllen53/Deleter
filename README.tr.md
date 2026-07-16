@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.3 seconds
+Output:
 # Deleter
 
 [English documentation](README.md) · [Deutsche Dokumentation](README.de.md)
@@ -6,7 +9,7 @@ Deleter, erişilebilir depolama analizi ve güvenli temizlik incelemesi için ge
 
 ## Durum
 
-0.1.0 sürümü güvenli tarama, koruma durumları, erişilebilirlik ve simülasyona odaklanan erken bir genel sürümdür. Dosya silme ve program kaldırma işlemleri henüz yıkıcı işlem olarak etkin değildir.
+0.2.0 sürümü ilk işlevsel genel sürümdür. Korumalı sistem taraması, doğrulanmış Geri Dönüşüm Kutusu temizliği, desteklenen kaldırma işlemleri, dışa aktarma, erişilebilirlik ve simülasyon modu içerir.
 
 ## Özellikler
 
@@ -17,7 +20,9 @@ Deleter, erişilebilir depolama analizi ve güvenli temizlik incelemesi için ge
 - İngilizce, Almanca ve Türkçe arayüz.
 - Yerel Qt klavye erişilebilirliği ve Accessible Output 2 duyuruları.
 - ACL farkındalıklı Windows hata yönetimi ve UAC desteği.
-- Gelecekteki yıkıcı işlemlerden önce simülasyon önizlemesi.
+- Doğrulanmış temizlik, onaydan sonra uygun dosyaları Windows Geri Dönüşüm Kutusu'na taşır; simülasyon modu inceleme için kullanılabilir.
+- Doğrulanmış komut planlama ve yalıtılmış çalıştırma ile Kayıt Defteri ve Microsoft Store/AppX kaldırma sağlayıcıları.
+- Tarama sonuçları için JSON ve CSV dışa aktarma.
 
 ## Güvenlik
 
@@ -29,12 +34,13 @@ Qt'nin yerel rollerini, adlarını, odak sırasını ve onay kutusu durumların�
 
 ## Kurulum ve kullanım
 
-Normal kullanıcılar hazır bir sürüm yayımlandığında onu indirebilir. Kaynaktan başlatmak için `run.bat` dosyasını çalıştırın; sanal ortamı oluşturur, bağımlılıkları kurar ve `python -m app` komutunu çalıştırır. Uygulama açılır açılmaz sistem taraması başlar. Dosyalar boyut filtresine göre kademeli gösterilir; programlar desteklenen Windows kaldırma kayıtlarından okunur. Kilitli öğelerin onay kutuları etkinleştirilemez.
+Normal kullanıcılar Releases sayfasındaki taşınabilir ZIP'i indirebilir. Kaynaktan başlatmak için `run.bat` dosyasını çalıştırın; sanal ortamı oluşturur, bağımlılıkları kurar ve `python -m app` komutunu çalıştırır. Uygulama açılır açılmaz sistem taraması başlar. Dosyalar boyut filtresine göre kademeli gösterilir; programlar desteklenen Windows kaynaklarından okunur. Kilitli öğelerin onay kutuları etkinleştirilemez.
 
 ## Gizlilik, sınırlamalar ve katkı
 
-Dosya listeleri, yollar, program bilgileri ve kullanım verileri cihazdan dışarı gönderilmez. Yıkıcı temizlik, tam kaldırma sağlayıcıları, dışa aktarma ve imzalı taşınabilir sürüm 0.1.0'da etkin değildir. Ayrıntılar [ROADMAP.md](ROADMAP.md) içindedir. Katkılar [CONTRIBUTING.md](CONTRIBUTING.md) ile, güvenlik sorunları ise [SECURITY.md](SECURITY.md) içindeki GitHub Security Advisories yöntemiyle bildirilmelidir.
+Dosya listeleri, yollar, program bilgileri ve kullanım verileri cihazdan dışarı gönderilmez. Kalıcı silme bilerek sunulmaz; temizlik doğrulanmış ve onaylanmış Geri Dönüşüm Kutusu taşımasıyla sınırlıdır. Sertifika Secret'ları ayarlandığında imza release iş akışı tarafından etkinleştirilir. Ayrıntılar [ROADMAP.md](ROADMAP.md) içindedir. Katkılar [CONTRIBUTING.md](CONTRIBUTING.md) ile, güvenlik sorunları ise [SECURITY.md](SECURITY.md) içindeki GitHub Security Advisories yöntemiyle bildirilmelidir.
 
 ## Lisans
 
 Deleter [MIT Lisansı](LICENSE) ile yayımlanır.
+
