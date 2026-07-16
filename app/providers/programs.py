@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 from __future__ import annotations
 
 import json
@@ -50,6 +53,8 @@ def installed_programs() -> list[ProgramEntry]:
                 continue
     for entry in microsoft_store_programs():
         programs[(entry.name.casefold(), entry.version, entry.source)] = entry
+    for entry in winget_programs():
+        programs[(entry.name.casefold(), entry.version, entry.source)] = entry
     return sorted(programs.values(), key=lambda item: item.name.casefold())
 
 
@@ -72,5 +77,44 @@ def microsoft_store_programs() -> list[ProgramEntry]:
         package_id = str(record.get("PackageFullName", ""))
         protected = not bool(package_id)
         programs.append(ProgramEntry(str(record.get("Name", "")), str(record.get("Version", "")), str(record.get("Publisher", "")), str(record.get("InstallLocation", "")), "", "Microsoft Store", provider_id="appx", package_id=package_id, protected=protected, protection_reason="Package identity could not be verified" if protected else ""))
+    return programs
+
+
+def winget_programs() -> list[ProgramEntry]:
+    if sys.platform != "win32":
+        return []
+    try:
+        completed = subprocess.run(
+            ["winget.exe", "list", "--accept-source-agreements", "--disable-interactivity", "--output", "json"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=120,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if completed.returncode != 0 or not completed.stdout.strip():
+        return []
+    try:
+        values = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        return []
+    records = values.get("Sources", []) if isinstance(values, dict) else values
+    if not isinstance(records, list):
+        return []
+    programs: list[ProgramEntry] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        name = str(record.get("Name") or record.get("name") or "").strip()
+        if not name:
+            continue
+        package_id = str(record.get("Id") or record.get("id") or "").strip()
+        version = str(record.get("Version") or record.get("version") or "").strip()
+        if not package_id:
+            continue
+        programs.append(ProgramEntry(name, version, str(record.get("Publisher") or "").strip(), "", "", "WinGet", provider_id="winget", package_id=package_id))
     return programs
 
