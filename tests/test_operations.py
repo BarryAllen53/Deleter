@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 from __future__ import annotations
 
 from datetime import datetime
@@ -37,4 +40,11 @@ def test_uninstall_planner_rejects_shell_syntax() -> None:
     program = ProgramEntry("Example", "1", "Publisher", "", "setup.exe & cmd.exe", "Registry")
     plan = UninstallService().plan(program)
     assert not plan.supported
+
+
+def test_uninstall_planner_builds_fixed_winget_command() -> None:
+    program = ProgramEntry("Example", "1", "Publisher", "", "", "WinGet", provider_id="winget", package_id="Publisher.Example")
+    plan = UninstallService().plan(program)
+    assert plan.supported
+    assert plan.arguments == ("winget.exe", "uninstall", "--id", "Publisher.Example", "--exact", "--silent", "--accept-source-agreements", "--disable-interactivity")
 
