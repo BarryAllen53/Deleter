@@ -24,3 +24,4 @@
 - Permanent deletion is intentionally unavailable; cleanup always targets the Recycle Bin.
 - Authenticode signing requires the encrypted certificate secrets documented in the release workflow.
 - Windows ACL-denied, in-use, and security-managed paths remain visible as inaccessible or protected.
+
