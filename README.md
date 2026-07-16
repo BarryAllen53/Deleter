@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.4 seconds
-Output:
 # Deleter
 
 [Deutsche Dokumentation](README.de.md) · [Türkçe documentation](README.tr.md)
