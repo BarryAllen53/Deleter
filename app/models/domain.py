@@ -24,6 +24,7 @@ class FileEntry:
     used_space_bytes: int = 0
     source: str = "System scan"
     cleanup_reason: str = "Size threshold requires review"
+    modified_ns: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,6 +49,8 @@ class ProgramEntry:
     used_space_bytes: int = 0
     protected: bool = False
     protection_reason: str = ""
+    provider_id: str = "registry"
+    package_id: str = ""
 
 
 @dataclass(frozen=True, slots=True)
